@@ -5,9 +5,10 @@ from streamlit_folium import st_folium
 import json
 import plotly.express as px
 from datos_por_agno import provincias_por_region
+from datos_por_agno import resumen_consumo_por_agno, resumen_consumo_por_region
 
 # =========================
-# Título de la App
+# Título
 # =========================
 st.markdown("""
 <h1 style='font-size:32px; color:#1f77b4; text-align:center;'>
@@ -16,14 +17,25 @@ para optimizar operaciones empresariales
 </h1>
 """, unsafe_allow_html=True)
 
+region = st.selectbox(
+    "Selecciona una región:",
+    ["Norte", "Sur", "Este"]
+)
+st.write(f"Has seleccionado la región: {region}")
+
+medida = st.radio(
+    "Selecciona una medida:",
+    ["Energia", "Potencia"],
+    horizontal=True
+)
+st.write(f"Medida seleccionada: {medida}")
+
 # =========================
-# Datos de ejemplo
+# Dataframe
 # =========================
-data = {
-    "Categoría": ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L"],
-    "Valores": [10, 20, 30, 40, 10, 20, 30, 40, 10, 20, 30, 40]
-}
-df = pd.DataFrame(data)
+df_regiones_meses, df_regiones_clientes = resumen_consumo_por_region(region)
+st.subheader(f"Consumo promedio por mes y tipo de cliente en la región {region}")
+
 
 # st.subheader("Datos")
 # st.dataframe(df, use_container_width=True)
@@ -31,42 +43,40 @@ df = pd.DataFrame(data)
 # =========================
 # Gráficos lado a lado
 # =========================
-# st.subheader("Visualizaciones Interactivas")
-col1, col2 = st.columns(2)
 
-with col1:
-    fig_bar = px.bar(df, x="Categoría", y="Valores", color="Categoría",
-                     text="Valores", color_discrete_sequence=px.colors.qualitative.Vivid)
-    fig_bar.update_layout(
-        xaxis_title="Categoría",
-        yaxis_title="Valores",
-        title="Gráfico de Barras",
-        margin=dict(l=20, r=20, t=40, b=20)
-    )
-    st.plotly_chart(fig_bar, use_container_width=True)
 
-with col2:
-    fig_pie = px.pie(df, names="Categoría", values="Valores", color="Categoría",
-                     color_discrete_sequence=px.colors.qualitative.Vivid, hole=0.3)
-    fig_pie.update_traces(textposition='inside', textinfo='percent+label')
-    fig_pie.update_layout(
-        title="Gráfico de Pastel",
-        margin=dict(l=20, r=20, t=40, b=20)
-    )
-    st.plotly_chart(fig_pie, use_container_width=True)
+fig_bar = px.bar(df_regiones_meses, x="Mes", y=medida, color="Mes",
+                    text=medida, color_discrete_sequence=px.colors.qualitative.Vivid)
+fig_bar.update_layout(
+    xaxis_title="Mes",
+    yaxis_title=medida,
+    title="Gráfico de Barras",
+    margin=dict(l=20, r=20, t=40, b=20)
+)
+st.plotly_chart(fig_bar, use_container_width=True)
+
+fig_pie = px.pie(df_regiones_clientes, names="Cliente", values=medida, color="Cliente",
+                    color_discrete_sequence=px.colors.qualitative.Vivid, hole=0.3)
+fig_pie.update_traces(textposition='inside', textinfo='percent+label')
+fig_pie.update_layout(
+    title="Gráfico de Pastel",
+    margin=dict(l=20, r=20, t=40, b=20)
+)
+st.plotly_chart(fig_pie, use_container_width=True)
 
 # =========================
 # Slider seleccion de agno
 # =========================
-valor_decimal = st.slider("Selecciona un año", 2012, 2024, 2024, 1)
-st.write(f"Año seleccionado: {valor_decimal}")
+agno = st.slider("Selecciona un año", 2012, 2024, 2024, 1)
+st.write(f"Año seleccionado: {agno}")
 
 # =========================
 # Mapa de RD con datos por región
 # =========================
-# st.subheader("Mapa de República Dominicana")
+st.subheader(f"Mapa de consumo de {medida} por región")
 
-valores_por_region = {"CIBAO": 250, "ESTE": 180, "SUR": 120}
+valores_por_region = resumen_consumo_por_agno(agno).set_index("region")[medida].to_dict()
+# valores_por_region = {"CIBAO": 250, "ESTE": 180, "SUR": 120}
 
 # Cargar GeoJSON
 with open("provinces_municipality_summary.geojson", "r", encoding="utf-8") as f:
@@ -85,9 +95,9 @@ m = folium.Map(
 
 # Función para obtener color según valor
 def get_color(region):
-    if region == "CIBAO":
+    if region == "Norte":
         return "#FFA500"  # naranja
-    elif region == "ESTE":
+    elif region == "Este":
         return "#00C853"  # verde
     else:
         return "#D50000"  # rojo
@@ -107,7 +117,7 @@ for feature in geojson_data["features"]:
         style_function=lambda x, color=color: {
             "fillColor": color, "color": "black", "weight": 1, "fillOpacity": 0.6
         },
-        tooltip=f"{provincia}: {valores_por_region[region]:.2f}" if region else provincia
+        tooltip=f"{region}: {valores_por_region[region]:.2f}" if region else provincia
     ).add_to(m)
 
 st_folium(m, width=900, height=500)
