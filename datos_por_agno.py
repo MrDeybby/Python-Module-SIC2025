@@ -1,0 +1,40 @@
+provincias_por_region = {
+    "CIBAO": [
+        "MONTE CRISTI",
+        "PUERTO PLATA",
+        "SANTIAGO",
+        "VALVERDE",
+        "SANTIAGO RODRÍGUEZ",
+        "LA VEGA",
+        "ESPAILLAT",
+        "HERMANAS MIRABAL",
+        "DAJABÓN",
+        "DUARTE",
+        "MARÍA TRINIDAD SÁNCHEZ",
+        "SAMANÁ",
+    ],
+    "SUR": [
+        "SAN JUAN",
+        "AZUA",
+        "BARAHONA",
+        "PEDERNALES",
+        "INDEPENDENCIA",
+        "BAORUCO",
+        "SAN CRISTÓBAL",
+        "PERAVIA",
+        "MONSEÑOR NOUEL",
+        "ELÍAS PIÑA",
+        "SAN JOSÉ DE OCOA"
+    ],
+    "ESTE": [
+        "LA ALTAGRACIA",
+        "LA ROMANA",
+        "SAN PEDRO DE MACORÍS",
+        "SANCHEZ RAMÍREZ",
+        "EL SEIBO",
+       "SANTO DOMINGO",
+        "DISTRITO NACIONAL",
+        "MONTE PLATA",
+        "HATO MAYOR",
+    ]
+}
