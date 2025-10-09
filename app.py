@@ -12,7 +12,7 @@ from datos_por_agno import resumen_consumo_por_agno, resumen_consumo_por_region
 # =========================
 st.markdown("""
 <h1 style='font-size:32px; color:#1f77b4; text-align:center;'>
-Tendencias de consumo eléctrico entre distribuidoras en República Dominicana
+PowerSense RD: Tendencias de consumo eléctrico entre distribuidoras en República Dominicana
 para optimizar operaciones empresariales
 </h1>
 """, unsafe_allow_html=True)
@@ -76,7 +76,6 @@ st.write(f"Año seleccionado: {agno}")
 st.subheader(f"Mapa de consumo de {medida} por región")
 
 valores_por_region = resumen_consumo_por_agno(agno).set_index("region")[medida].to_dict()
-# valores_por_region = {"CIBAO": 250, "ESTE": 180, "SUR": 120}
 
 # Cargar GeoJSON
 with open("provinces_municipality_summary.geojson", "r", encoding="utf-8") as f:
@@ -122,3 +121,14 @@ for feature in geojson_data["features"]:
 
 st_folium(m, width=900, height=500)
 
+# =========================
+# Pie de página
+# =========================
+st.markdown("""
+<hr style="margin-top:50px; border: none; height: 2px; background-color: #1f77b4;">
+
+<div style='text-align:center; color:gray; font-size:14px;'>
+Desarrollado con ⚡ por <span style='color:#1f77b4; font-weight:bold;'>SenpAI 先輩</span><br>
+<em>Samsung Innovation Campus</em>
+</div>
+""", unsafe_allow_html=True)
