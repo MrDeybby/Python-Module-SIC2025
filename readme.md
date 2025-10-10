@@ -29,6 +29,11 @@ El sistema permite explorar datos por regiones, años y tipos de medida (energí
 - Interfaz web responsiva desarrollada con **Streamlit**.
 
 ---
+## Enlace a plataforma PowerSense RD
+
+<https://powersense-rd-tendencias-de-consumo-electrico.streamlit.app/>
+
+---
 
 ## Requisitos
 
