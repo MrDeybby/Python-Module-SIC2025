@@ -31,7 +31,9 @@ El sistema permite explorar datos por regiones, años y tipos de medida (energí
 ---
 ## Enlace a plataforma PowerSense RD
 
-<https://powersense-rd-tendencias-de-consumo-electrico.streamlit.app/>
+**Explora la aplicación aquí:**  
+[PowerSense RD](https://powersense-rd-tendencias-de-consumo-electrico.streamlit.app/)
+
 
 ---
 
