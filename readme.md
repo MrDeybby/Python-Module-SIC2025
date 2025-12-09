@@ -59,6 +59,4 @@ Luego abre el enlace que aparece en la terminal (por defecto http://localhost:85
 ## Créditos
 
 Desarrollado por el equipo **SenpAI 先輩**
-Proyecto académico para el módulo de Python del Samsung Innovation Campus 2025 (SIC2025).
-
-
+Proyecto académico para los módulo de Python e Inteligencia Artificial del Samsung Innovation Campus 2025 (SIC2025).
