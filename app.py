@@ -6,6 +6,9 @@ import json
 import plotly.express as px
 from datos_por_agno import provincias_por_region
 from datos_por_agno import resumen_consumo_por_agno, resumen_consumo_por_region
+from predecir import EnergyModel
+
+
 
 # =========================
 # Título
@@ -120,6 +123,36 @@ for feature in geojson_data["features"]:
     ).add_to(m)
 
 st_folium(m, width=900, height=500)
+
+# =========================
+# Predicción de consumo
+# =========================
+model = EnergyModel()
+st.markdown("<h2 style='color:#1f77b4;'>Predicción de consumo</h2>", unsafe_allow_html=True)
+
+col1, col2 = st.columns(2)
+
+with col1:
+    input_anio = st.number_input("Año", min_value=2000, max_value=2100, value=2025, step=1)
+    input_mes = st.number_input("Mes", min_value=1, max_value=12, value=1, step=1)
+
+with col2:
+    input_mes_pasado = st.number_input("Consumo del mes pasado", min_value=0.0, value=398.123055)
+    input_region = st.selectbox("Región", ["Norte", "Sur", "Este"])
+
+if st.button("Predecir consumo"):
+    try:
+        prediccion = model.predict(
+            año=input_anio,
+            mes=input_mes,
+            mes_pasado=input_mes_pasado,
+            region=input_region.lower()
+        )
+
+        st.success(f"Predicción de consumo estimada: **{prediccion:.2f}**")
+
+    except Exception as e:
+        st.error(f"Error al predecir: {e}")
 
 # =========================
 # Pie de página
