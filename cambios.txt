@@ -1,0 +1,48 @@
+CAMBIOS REALIZADOS
+==================
+
+Fecha: 2025-12-14
+Módulo: Dashboard Streamlit + Context Tracking
+
+---
+
+✅ AGREGADAS CLAVES EXPLÍCITAS A WIDGETS (app.py)
+--------------------------------------------------
+- Agregado key="region" al selectbox de región principal
+- Agregado key="medida" al radio button de medida (Energia/Potencia)
+- Agregado key="agno" al slider de año
+- Agregado key="pred_año" al input de año en sección de predicción
+- Agregado key="pred_mes" al input de mes en sección de predicción
+- Agregado key="pred_mes_pasado" al input de consumo del mes pasado
+- Agregado key="pred_region" al selectbox de región en sección de predicción
+
+✅ GUARDAR RESULTADO DE PREDICCIÓN EN SESSION_STATE (app.py)
+-------------------------------------------------------------
+- Agregado st.session_state.pred_result para capturar el resultado de predicción
+- Permite que get_dashboard_context() pueda acceder al último resultado predicho
+
+✅ CREADO MÓDULO DE CONTEXT TRACKING (utils/context.py)
+--------------------------------------------------------
+- Nueva función get_dashboard_context() para obtener snapshot del estado del dashboard
+- Acceso seguro a st.session_state usando .get() para evitar errores
+- Retorna diccionario limpio con:
+  * Región seleccionada
+  * Medida seleccionada (Energia/Potencia)
+  * Filtros de año
+  * Inputs de predicción (año, mes, consumo previo, región)
+  * Resultado de predicción
+
+PROPÓSITO
+---------
+Estas claves permiten capturar el estado completo del dashboard en cualquier momento
+mediante la función get_dashboard_context(), útil para:
+- Debugging y logging
+- Integración con IA/LLM para contexto de usuario
+- Analytics y tracking de uso
+- Reproducibilidad de estados
+
+USO
+---
+from utils.context import get_dashboard_context
+context = get_dashboard_context()
+st.json(context)  # Ver estado actual

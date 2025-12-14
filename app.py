@@ -10,6 +10,12 @@ from predecir import EnergyModel
 
 
 
+# para AI y context tracking
+from utils.context import get_dashboard_context
+from agent_backend.agent import setup_vector_store_and_model, update_agent_context
+from langchain_core.messages import HumanMessage, AIMessage
+
+
 # =========================
 # Título
 # =========================
@@ -22,14 +28,16 @@ para optimizar operaciones empresariales
 
 region = st.selectbox(
     "Selecciona una región:",
-    ["Norte", "Sur", "Este"]
+    ["Norte", "Sur", "Este"],
+    key="region"
 )
 st.write(f"Has seleccionado la región: {region}")
 
 medida = st.radio(
     "Selecciona una medida:",
     ["Energia", "Potencia"],
-    horizontal=True
+    horizontal=True,
+    key="medida"
 )
 st.write(f"Medida seleccionada: {medida}")
 
@@ -70,7 +78,7 @@ st.plotly_chart(fig_pie, use_container_width=True)
 # =========================
 # Slider seleccion de agno
 # =========================
-agno = st.slider("Selecciona un año", 2012, 2024, 2024, 1)
+agno = st.slider("Selecciona un año", 2012, 2024, 2024, 1, key="agno")
 st.write(f"Año seleccionado: {agno}")
 
 # =========================
@@ -133,12 +141,12 @@ st.markdown("<h2 style='color:#1f77b4;'>Predicción de consumo</h2>", unsafe_all
 col1, col2 = st.columns(2)
 
 with col1:
-    input_anio = st.number_input("Año", min_value=2000, max_value=2100, value=2025, step=1)
-    input_mes = st.number_input("Mes", min_value=1, max_value=12, value=1, step=1)
+    input_anio = st.number_input("Año", min_value=2000, max_value=2100, value=2025, step=1, key="pred_año")
+    input_mes = st.number_input("Mes", min_value=1, max_value=12, value=1, step=1, key="pred_mes")
 
 with col2:
-    input_mes_pasado = st.number_input("Consumo del mes pasado", min_value=0.0, value=398.123055)
-    input_region = st.selectbox("Región", ["Norte", "Sur", "Este"])
+    input_mes_pasado = st.number_input("Consumo del mes pasado", min_value=0.0, value=398.123055, key="pred_mes_pasado")
+    input_region = st.selectbox("Región", ["Norte", "Sur", "Este"], key="pred_region")
 
 if st.button("Predecir consumo"):
     try:
@@ -148,11 +156,107 @@ if st.button("Predecir consumo"):
             mes_pasado=input_mes_pasado,
             region=input_region.lower()
         )
-
+        
+        # Guardar resultado en session_state para context tracking
+        st.session_state.pred_result = prediccion
+        
         st.success(f"Predicción de consumo estimada: **{prediccion:.2f}**")
 
     except Exception as e:
         st.error(f"Error al predecir: {e}")
+
+
+# =========================
+# 🔍 DEBUG: Estado del Dashboard
+# =========================
+
+
+# Mostrar en un expander para no ocupar espacio
+
+# =========================
+# 🔍 DEBUG: Estado del Dashboard
+# =========================
+try:
+    agent = setup_vector_store_and_model()
+except Exception as e:
+    st.error(f"Error al configurar el agente: {e}")
+    st.stop()
+
+# =========================
+# CHATBOT EN SIDEBAR
+# =========================
+with st.sidebar:
+    st.markdown("## 💬 Asistente PowerSenseAI")
+    st.markdown("---")
+    
+    # Inicializar mensajes
+    if "messages" not in st.session_state:
+        st.session_state.messages = []
+    
+    # Contenedor con scroll para historial
+    chat_container = st.container()
+    
+    with chat_container:
+        # Mostrar historial de mensajes (más antiguos arriba, más recientes abajo)
+        for message in st.session_state.messages:
+            if isinstance(message, HumanMessage):
+                role = "user"
+            elif isinstance(message, AIMessage):
+                role = "assistant"
+            else:
+                continue
+            
+            with st.chat_message(role):
+                st.markdown(message.content)
+    
+    # Input del usuario al final (siempre visible)
+    if prompt := st.chat_input("Pregunta sobre leyes o datos del dashboard..."):
+        # Agregar mensaje del usuario
+        st.session_state.messages.append(HumanMessage(content=prompt))
+        
+        # Actualizar contexto
+        context = get_dashboard_context()
+        update_agent_context(context)
+
+        # Procesar respuesta del agente
+        with st.spinner("Analizando..."):
+            try:
+                history_window = st.session_state.messages[-3:]
+                response = agent.invoke({"messages": history_window})
+                
+                # Filtrar mensajes: separar razonamiento de respuesta final
+                final_response = None
+                reasoning_json = None
+                
+                for m in response["messages"]:
+                    if isinstance(m, AIMessage):
+                        if '"veredicto"' in m.content:
+                            reasoning_json = m.content
+                        elif not (hasattr(m, "tool_calls") and m.tool_calls):
+                            final_response = m.content
+                
+                # Guardar respuesta final
+                if final_response:
+                    st.session_state.messages.append(AIMessage(content=final_response))
+                    # Rerun para mostrar el mensaje en el historial
+                    st.rerun()
+                else:
+                    st.warning("⚠️ No se generó una respuesta válida.")
+                
+                # Mostrar razonamiento en expander (solo si hay)
+                if reasoning_json:
+                    with st.expander("🧠 Ver razonamiento"):
+                        st.code(reasoning_json, language="json")
+                
+            except Exception as e:
+                st.error(f"Error: {e}")
+                import traceback
+                st.code(traceback.format_exc())
+    
+    # Debug expandible al final del sidebar
+    st.markdown("---")
+    with st.expander("🔍 Debug Estado"):
+        st.json(get_dashboard_context())
 
 # =========================
 # Pie de página

@@ -54,3 +54,17 @@ scikit-learn==1.5.2
 joblib==1.4.2
 xgboost==2.1.1
 
+#  ------------------ Gen AI --------------------
+langchain
+langchain-community 
+langchain-core 
+langchain-huggingface
+langchain-groq
+accelerate 
+transformers
+pypdf
+sentence-transformers
+langchain-text-splitters
+chromadb
+pydantic<=2.12.3,>=2.0
+python-dotenv
