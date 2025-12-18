@@ -27,14 +27,14 @@ class EnergyModel:
             "sur": sur
         }])
 
-        pred = self.modelo .predict(fila)[0]
+        pred = self.modelo.predict(fila)[0]
         return pred
 
-
-model = EnergyModel()
-print(model.predict(
-    año=2025,
-    mes=1,
-    mes_pasado= 398.123055,
-    region="sur")
-)
+if __name__ == "__main__":
+    model = EnergyModel()
+    print(model.predict(
+        año=2025,
+        mes=1,
+        mes_pasado= 398.123055,
+        region="sur")
+    )
